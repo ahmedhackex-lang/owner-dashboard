@@ -1,17 +1,26 @@
 import axios, { AxiosError } from 'axios'
 import { toast } from 'sonner'
 
-// Fallback to your railway URL if env is missing, but ensure it's HTTPS
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://resourceful-presence-production-a383.up.railway.app'
+/**
+ * 2026 Production API Configuration
+ * Forces HTTPS to prevent Mixed Content errors
+ */
+
+// 1. Get the URL from environment
+let rawUrl = process.env.NEXT_PUBLIC_API_URL || 'https://resourceful-presence-production-a383.up.railway.app'
+
+// 2. FORCE HTTPS and Remove Trailing Slashes
+const API_URL = rawUrl.replace('http://', 'https://').replace(/\/$/, '')
 
 export const apiClient = axios.create({
   baseURL: API_URL,
+  withCredentials: true, // Required for secure cookie/session handling
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// Request interceptor (add auth token)
+// Request interceptor
 apiClient.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
@@ -22,26 +31,31 @@ apiClient.interceptors.request.use(
     }
     return config
   },
-  (error) => {
-    return Promise.reject(error)
-  }
+  (error) => Promise.reject(error)
 )
 
-// Response interceptor (handle errors)
+// Response interceptor
 apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status
+    
+    if (status === 401) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('access_token')
         localStorage.removeItem('user')
-        window.location.href = '/login'
+        // Only redirect if not already on login page
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
       }
     }
     
-    const errorMessage = (error.response?.data as any)?.detail || (error.response?.data as any)?.error?.message || 'An error occurred'
+    // Detailed error logging for debugging
+    console.error(`[API Error] ${error.config?.method?.toUpperCase()} ${error.config?.url}:`, error.response?.data)
+
+    const errorMessage = (error.response?.data as any)?.detail || 'Connection error. Check your internet.'
     
-    // Only show toast if we are in the browser
     if (typeof window !== 'undefined') {
       toast.error(errorMessage)
     }
