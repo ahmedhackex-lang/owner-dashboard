@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { formatCurrency, formatDate } from '@/lib/utils'
 
 interface DashboardStats {
   total_revenue: number
@@ -94,10 +95,6 @@ export default function DashboardPage() {
     router.push('/login')
   }
 
-  const formatCurrency = (amount: number) => {
-    return 'PKR ' + amount.toLocaleString('en-PK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  }
-
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb' }}>
@@ -173,7 +170,7 @@ export default function DashboardPage() {
                 {stats.recent_sales.map((sale: any) => (
                   <tr key={sale.id} style={{ borderTop: '1px solid #e5e7eb' }}>
                     <td style={{ padding: '0.75rem', fontWeight: 500, color: '#111827' }}>{sale.invoice_number}</td>
-                    <td style={{ padding: '0.75rem', color: '#6b7280', fontSize: '0.875rem' }}>{new Date(sale.created_at).toLocaleString()}</td>
+                    <td style={{ padding: '0.75rem', color: '#6b7280', fontSize: '0.875rem' }}>{formatDate(sale.created_at)}</td>
                     <td style={{ padding: '0.75rem' }}>
                       <span style={{ background: '#dbeafe', color: '#1e40af', padding: '0.25rem 0.5rem', borderRadius: '0.25rem', fontSize: '0.75rem', fontWeight: 500 }}>{sale.payment_method}</span>
                     </td>
