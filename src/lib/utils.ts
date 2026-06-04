@@ -19,3 +19,13 @@ export function formatDate(date: string | Date): string {
     year: 'numeric'
   })
 }
+
+export function formatDateTime(date: string | Date): string {
+  return new Date(date).toLocaleString('en-PK', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
