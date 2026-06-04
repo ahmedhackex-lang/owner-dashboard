@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDateTime } from '@/lib/utils'
 
 export default function SalesPage() {
   const { data: sales, isLoading } = useSales({ limit: 50 })
@@ -57,7 +57,7 @@ export default function SalesPage() {
                   <TableCell>{sale.cashier_name || 'N/A'}</TableCell>
                   <TableCell>{formatCurrency(sale.net_amount)}</TableCell>
                   <TableCell>{sale.payment_method}</TableCell>
-                  <TableCell>{formatDate(sale.created_at)}</TableCell>
+                  <TableCell>{formatDateTime(sale.created_at)}</TableCell>
                   <TableCell>
                     {sale.is_voided ? (
                       <Badge variant="destructive">Voided</Badge>
