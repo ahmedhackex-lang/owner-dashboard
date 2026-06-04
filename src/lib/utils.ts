@@ -21,11 +21,14 @@ export function formatDate(date: string | Date): string {
 }
 
 export function formatDateTime(date: string | Date): string {
-  return new Date(date).toLocaleString('en-PK', {
+  const d = new Date(date)
+  return d.toLocaleDateString('en-PK', {
     day: '2-digit',
     month: 'short',
-    year: 'numeric',
+    year: 'numeric'
+  }) + ' ' + d.toLocaleTimeString('en-PK', {
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
+    second: '2-digit'
   })
 }
