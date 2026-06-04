@@ -1,7 +1,8 @@
 import axios, { AxiosError } from 'axios'
 import { toast } from 'sonner'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL
+// Fallback to your railway URL if env is missing, but ensure it's HTTPS
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://resourceful-presence-production-a383.up.railway.app'
 
 export const apiClient = axios.create({
   baseURL: API_URL,
@@ -13,9 +14,11 @@ export const apiClient = axios.create({
 // Request interceptor (add auth token)
 apiClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+      }
     }
     return config
   },
@@ -29,13 +32,19 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('access_token')
-      localStorage.removeItem('user')
-      window.location.href = '/login'
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('access_token')
+        localStorage.removeItem('user')
+        window.location.href = '/login'
+      }
     }
     
-    const errorMessage = (error.response?.data as any)?.error?.message || 'An error occurred'
-    toast.error(errorMessage)
+    const errorMessage = (error.response?.data as any)?.detail || (error.response?.data as any)?.error?.message || 'An error occurred'
+    
+    // Only show toast if we are in the browser
+    if (typeof window !== 'undefined') {
+      toast.error(errorMessage)
+    }
     
     return Promise.reject(error)
   }
