@@ -1,18 +1,32 @@
 import { apiClient } from './api'
 
 export const authService = {
-  async login(credentials: FormData) {
-    // Note: FastAPI OAuth2 uses Form Data
-    const response = await apiClient.post('/api/auth/login', credentials, {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+  /**
+   * Login using JSON instead of Form Data
+   */
+  async login(credentials: any) {
+    // credentials should be { username, password }
+    const response = await apiClient.post('/api/auth/login', {
+      username: credentials.username || credentials.get?.('username'),
+      password: credentials.password || credentials.get?.('password')
     })
+    
+    if (response.data.access_token) {
+      localStorage.setItem('access_token', response.data.access_token)
+      localStorage.setItem('user', JSON.stringify(response.data.user))
+    }
+    
     return response.data
   },
 
   async logout() {
-    const response = await apiClient.post('/api/auth/logout')
-    return response.data
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('user')
+    try {
+      await apiClient.post('/api/auth/logout')
+    } catch (e) {
+      // Ignore logout errors
+    }
+    window.location.href = '/login'
   }
 }
